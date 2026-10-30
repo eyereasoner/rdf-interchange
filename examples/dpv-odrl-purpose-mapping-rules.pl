@@ -2,6 +2,13 @@
 % correspondences and return one deterministic mapping report.
 %% goal: result_rdf(_, _, _, _)
 
+% These helpers are called with some arguments known. Tabling evaluates them
+% on demand, also in engines that otherwise run rules forward.
+:- table iri_term/2.
+:- table rdf_link/3.
+:- table mapping_value_iri/3.
+:- table mapping_target_iri/2.
+
 dpv_odrl_purpose_mapping(Mappings) :-
   findall(
     mapping(SourceRole, Value, TargetRole),

@@ -2,6 +2,13 @@
 % produce one deterministic FPV-style decision report.
 %% goal: result_rdf(_, _, _, _)
 
+% These helpers are called with some arguments known. Tabling evaluates them
+% on demand, also in engines that otherwise run rules forward.
+:- table iri_term/2.
+:- table rdf_link/3.
+:- table rdf_number/3.
+:- table policy_rule/6.
+
 trust_flow_report([Care, Clinic, Ads]) :-
   flow_decision(flow_care, Care),
   flow_decision(flow_clinic, Clinic),

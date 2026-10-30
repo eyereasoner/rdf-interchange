@@ -2,17 +2,17 @@
 % risk per conflict, score it, and return one deterministic ranking.
 %% goal: result_rdf(_, _, _, _)
 
-consumer_risk_report(Ranked) :-
-  findall(
-    key(InverseScore, Clause)-dpv_risk(Risk, Score, Level, Clause, Mitigation),
-    (
-      risk_report(Risk, Score, Level, Clause, Mitigation),
-      InverseScore is 1000 - Score
-    ),
-    Unsorted
-  ),
-  sort(Unsorted, Sorted),
-  ranked_values(Sorted, 1, Ranked).
+% These helpers are called with some arguments known. Tabling evaluates them
+% on demand, also in engines that otherwise run rules forward.
+:- table iri_term/2.
+:- table rdf_link/3.
+:- table rdf_text/3.
+:- table rdf_number/3.
+:- table constraint_text/3.
+:- table constraint_number/3.
+:- table duty_action/2.
+:- table notice_days/1.
+:- table risk_triggered/3.
 
 risk_report(Risk, Score, Level, Clause, Mitigation) :-
   risk_profile(_Profile, Risk, Rule, Need, Base, Mitigation),
@@ -20,8 +20,7 @@ risk_report(Risk, Score, Level, Clause, Mitigation) :-
   rdf_text(Rule, ex(clause), ClauseText),
   Clause = ClauseText,
   rdf_number(Need, ex(importance), Importance),
-  Raw is Base + Importance,
-  (Raw > 100 -> Score = 100 ; Score = Raw),
+  Score is min(Base + Importance, 100),
   risk_level(Score, Level).
 
 risk_profile(Profile, Risk, Rule, Need, Base, Mitigation) :-
@@ -38,7 +37,7 @@ risk_triggered(deletion_risk, Rule, _Need) :-
   rdf_link(ex('consumer-policy'), odrl(permission), Rule),
   rdf_link(Rule, odrl(action), ex('remove-account')),
   \+ duty_action(Rule, ex(inform)),
-  \+ constraint_number(Rule, ex(noticeDays), _Days).
+  \+ notice_days(Rule).
 
 risk_triggered(terms_risk, Rule, Need) :-
   rdf_link(ex('consumer-policy'), odrl(permission), Rule),
@@ -57,6 +56,9 @@ risk_triggered(portability_risk, Rule, _Need) :-
   rdf_link(ex('consumer-policy'), odrl(prohibition), Rule),
   rdf_link(Rule, odrl(action), ex(export)).
 
+notice_days(Rule) :-
+  constraint_number(Rule, ex(noticeDays), _Days).
+
 duty_action(Rule, Action) :-
   rdf_link(Rule, odrl(duty), Duty),
   rdf_link(Duty, odrl(action), Action).
@@ -74,11 +76,6 @@ constraint_number(Rule, LeftOperand, Number) :-
 
 risk_level(Score, high) :- Score > 79.
 risk_level(Score, moderate) :- Score > 49, Score < 80.
-
-ranked_values([], _Rank, []).
-ranked_values([_Key-Risk|Rest], Rank, [rank(Rank, Risk)|Ranked]) :-
-  NextRank is Rank + 1,
-  ranked_values(Rest, NextRank, Ranked).
 
 risk_resource(deletion_risk, ex('deletion-risk')).
 risk_resource(terms_risk, ex('terms-risk')).
@@ -129,11 +126,18 @@ result_rdf(iri(RiskIri), iri('https://example.org/mitigation'), iri(MitigationIr
   risk_resource(Risk, RiskTerm), iri_term(RiskTerm, RiskIri),
   mitigation_resource(Mitigation, MitigationTerm), iri_term(MitigationTerm, MitigationIri).
 
+% A risk's rank is one more than the number of risks ahead of it: a higher
+% score, or the same score and an earlier clause.
 consumer_ranked_item(Rank, Risk, Score, Level, Clause, Mitigation) :-
-  consumer_risk_report(Ranked),
-  list_member(rank(Rank, dpv_risk(Risk, Score, Level, Clause, Mitigation)), Ranked).
-list_member(X, [X|_]).
-list_member(X, [_|Xs]) :- list_member(X, Xs).
+  risk_report(Risk, Score, Level, Clause, Mitigation),
+  aggregate_all(count, ranked_ahead(Score, Clause, _Other), Ahead),
+  Rank is Ahead + 1.
+ranked_ahead(Score, _Clause, Other) :-
+  risk_report(Other, OtherScore, _OtherLevel, _OtherClause, _OtherMitigation),
+  OtherScore > Score.
+ranked_ahead(Score, Clause, Other) :-
+  risk_report(Other, Score, _OtherLevel, OtherClause, _OtherMitigation),
+  OtherClause @< Clause.
 number_atom(Number, Atom) :- number_chars(Number, Chars), atom_chars(Atom, Chars).
 
 % ISO Prolog helper: print the complete test result as rdf/4 facts.

@@ -6,7 +6,7 @@ five-file pipeline.
 ```text
 <name>-input.ttl|trig   RDF input
 <name>-input.pl         rdf-to-prolog result
-<name>-rules.pl         ISO Prolog rules
+<name>-rules.pl         Prolog rules
 <name>-output.pl        Prolog test result as ground rdf/4 facts
 <name>-output.ttl|trig  prolog-to-rdf result
 ```
@@ -37,7 +37,7 @@ rdf-to-prolog examples/odrl-dpv-fpv-trust-flow-input.ttl \
   -o examples/odrl-dpv-fpv-trust-flow-input.pl
 ```
 
-Load the input and rules in an ISO-style Prolog engine and query:
+Load the input and rules in a Prolog engine and query:
 
 ```prolog
 ?- result_rdf(S, P, O, G).
@@ -54,7 +54,7 @@ eyeprolog --quiet --goal write_results \
   > examples/odrl-dpv-fpv-trust-flow-output.pl
 ```
 
-The same ISO-style rules can, for example, be materialized with SWI-Prolog:
+The same rules can, for example, be materialized with SWI-Prolog:
 
 ```sh
 swipl -q \
@@ -65,6 +65,22 @@ swipl -q \
 ```
 
 Only the command-line flags are host-specific.
+
+eyepl evaluates the same rules and lists the answers of the query as
+`result_rdf/4` facts:
+
+```sh
+printf '?- result_rdf(S, P, O, G).\n' > query.pl
+eyepl examples/odrl-dpv-fpv-trust-flow-input.pl \
+  examples/odrl-dpv-fpv-trust-flow-rules.pl query.pl
+```
+
+The rules are ISO Prolog with two widely supported additions. Four examples
+declare `:- table` for helpers that are called with some arguments already
+known, and three rank results with `aggregate_all(count, Goal, Count)`.
+EyeProlog, SWI-Prolog, and eyepl run all 14 examples. A table declaration
+evaluates a helper on demand; engines that otherwise run rules forward, such as
+eyepl, need it for helpers that cannot start without those arguments.
 
 Convert the Prolog result back to RDF:
 

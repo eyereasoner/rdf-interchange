@@ -68,7 +68,7 @@ RDF input
    | rdf-to-prolog
    v
 <name>-input.pl
-   + <name>-rules.pl       (ISO Prolog)
+   + <name>-rules.pl       (Prolog)
    | query result_rdf/4
    v
 <name>-output.pl           (ground rdf/4 test results)
