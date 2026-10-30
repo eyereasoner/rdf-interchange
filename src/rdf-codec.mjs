@@ -209,7 +209,9 @@ export function toEyeProlog(t) {
 }
 
 export function eyePrologQuadToNQuad(term) {
-  if (term?.type !== 'compound' || term.name !== 'rdf' || term.args.length !== 4) throw new Error('expected rdf/4 fact');
+  if (term?.type !== 'compound' || !['rdf', 'result_rdf'].includes(term.name) || term.args.length !== 4) {
+    throw new Error('expected rdf/4 or result_rdf/4 fact');
+  }
   const [subject, predicate, object, graph] = term.args.map(fromEyeProlog);
   return quadToNQuad({ subject, predicate, object, graph });
 }

@@ -68,7 +68,8 @@ ground `rdf/4` facts. These query names are conveniences for the examples;
 your application can choose its own.
 
 Pass the resulting facts to `prolog-to-rdf`. It parses the source, extracts
-ground `rdf/4` facts, validates their terms, and serializes them. It ignores
+ground `rdf/4` and `result_rdf/4` facts, validates their terms, and serializes
+them. It ignores
 directives, rules, queries, and other predicates without executing them.
 Malformed or nonground `rdf/4` facts are errors.
 

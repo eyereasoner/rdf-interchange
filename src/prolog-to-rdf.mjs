@@ -4,12 +4,16 @@ import process from 'node:process';
 import { parseClauses } from './prolog-parser.mjs';
 import { fromEyeProlog, quadToNQuad, quadsToTrig, quadsToTurtle } from './rdf-codec.mjs';
 
+// Ground rdf/4 facts carry results. A result document that lists the answers
+// of a result_rdf/4 query, as eyepl writes, carries them as result_rdf/4 facts.
+const RESULT_PREDICATES = new Set(['rdf', 'result_rdf']);
+
 export function extractRdfQuadsFromProlog(source) {
   const clauses = parseClauses(String(source), { sourceMetadata: false });
   const quads = [];
   const seen = new Set();
   for (const clause of clauses) {
-    if (clause.body.length || clause.head?.name !== 'rdf' || clause.head?.arity !== 4) continue;
+    if (clause.body.length || !RESULT_PREDICATES.has(clause.head?.name) || clause.head?.arity !== 4) continue;
     const [subject, predicate, object, graph] = clause.head.args.map(fromEyeProlog);
     const quad = { subject, predicate, object, graph };
     const key = quadToNQuad(quad);

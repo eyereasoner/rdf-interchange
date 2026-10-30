@@ -86,8 +86,9 @@ write_results.
 
 `result_rdf/4` is the query used by these examples. `write_results/0` prints
 all its solutions as ground `rdf/4` facts, the format accepted by
-`prolog-to-rdf`. Your program can use any query name; the converter only
-reads the resulting `rdf/4` facts.
+`prolog-to-rdf`. The converter also reads ground `result_rdf/4` facts, so a
+result document that lists the query's answers as facts, such as eyepl's
+output, converts directly. Other query names need `rdf/4` facts.
 See [`examples/README.md`](examples/README.md) for a concrete trust-flow run.
 
 With EyeProlog 1.5.26 or newer, materialize those facts without adding the

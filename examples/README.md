@@ -72,8 +72,11 @@ eyepl evaluates the same rules and lists the answers of the query as
 ```sh
 printf '?- result_rdf(S, P, O, G).\n' > query.pl
 eyepl examples/odrl-dpv-fpv-trust-flow-input.pl \
-  examples/odrl-dpv-fpv-trust-flow-rules.pl query.pl
+  examples/odrl-dpv-fpv-trust-flow-rules.pl query.pl > result.pl
+prolog-to-rdf result.pl -o result.ttl
 ```
+
+`prolog-to-rdf` reads those `result_rdf/4` facts like `rdf/4` facts.
 
 The rules are ISO Prolog with two widely supported additions. Four examples
 declare `:- table` for helpers that are called with some arguments already

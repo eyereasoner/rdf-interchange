@@ -38,6 +38,32 @@ await test('RDF 1.2 directional and triple terms roundtrip', () => {
   );
 });
 
+await test('result_rdf/4 facts from a result document convert like rdf/4 facts', () => {
+  // eyepl lists a query's answers as facts in a commented document that may
+  // also hold rules and other records; only the result facts become quads.
+  const document = `% Witnesses
+witness(w1, W) :- fresh(W).
+
+% Answer 1
+result_rdf(
+    iri('https://example/s'),
+    iri('https://example/p'),
+    literal('chat', lang(fr)),
+    default_graph
+).
+result_rdf(iri('https://example/s'), iri('https://example/q'), iri('https://example/o'), iri('https://example/g')).
+result_rdf(iri('https://example/s'), iri('https://example/p'), literal('chat', lang(fr)), default_graph).
+answer(2, [binding("X", 1)]).
+rdf(iri('https://example/a'), iri('https://example/b'), iri('https://example/c'), default_graph).
+`;
+  assert.equal(
+    extractRdfFromProlog(document),
+    '<https://example/s> <https://example/p> "chat"@fr .\n' +
+      '<https://example/s> <https://example/q> <https://example/o> <https://example/g> .\n' +
+      '<https://example/a> <https://example/b> <https://example/c> .\n',
+  );
+});
+
 await test('nested RDF 1.2 triple terms roundtrip', () => {
   const input = '<https://example/s> <https://example/p> <<( <https://example/a> <https://example/b> <<( _:x <https://example/c> "line\\nfeed" )>> )>> .\n';
   const prolog = compileRdfToProlog(input, { scope: 'doc' });

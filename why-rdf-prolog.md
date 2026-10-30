@@ -26,9 +26,9 @@ This package performs the conversions. [EyeProlog](https://github.com/eyereasone
 or another Prolog engine runs the rules. You can inspect the intermediate
 facts, use ordinary Prolog tools, and convert the results back to RDF.
 
-The examples call their result query `result_rdf/4`, but that name is not
-required by the converter. What matters is that the output contains valid,
-ground `rdf/4` facts.
+The examples call their result query `result_rdf/4`. The converter reads valid,
+ground `rdf/4` facts, and also `result_rdf/4` facts, so a listing of that
+query's answers converts directly.
 
 The rules determine what is inferred. Converting RDF into facts does not
 automatically give a Prolog program RDF entailment semantics, and
