@@ -1,8 +1,8 @@
-# rdf-prolog-interchange
+# rdf-interchange
 
-Standalone RDF 1.2 <-> ISO Prolog interchange toolkit. It reversibly converts
-RDF dataset quads to ordinary `rdf/4` Prolog facts and ground `rdf/4` facts
-back to RDF.
+Standalone RDF 1.2 interchange toolkit. It reversibly converts RDF dataset
+quads to ordinary `rdf/4` Prolog facts and ground `rdf/4` facts back to RDF,
+and does the same for [eyecode](#eyecode) documents.
 The package contains no Prolog solver.
 
 RDF supplies the data model; ISO Prolog supplies the programming language.
@@ -171,7 +171,7 @@ import {
   serializeRdfFromProlog,
   compileRdfDocumentToEyecode,
   serializeRdfFromEyecode,
-} from 'rdf-prolog-interchange';
+} from 'rdf-interchange';
 
 const facts = compileRdfToProlog(nquads);
 const nquadsAgain = extractRdfFromProlog(facts);
