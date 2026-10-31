@@ -135,6 +135,32 @@ exactly what that means.
 
 Aliases `rdf-to-pl` and `pl-to-rdf` are also provided.
 
+## eyecode
+
+[eyecode](https://github.com/eyereasoner/eyecode) states rules in JavaScript
+and reads data as documents of JavaScript expressions, one per line, which it
+never executes. `rdf-to-eyecode` writes the same `rdf/4` terms as such a
+document, for eyecode's `facts_from`, and `eyecode-to-rdf` reads the ground
+`rdf/4` and `result_rdf/4` terms of an eyecode document, such as the
+conclusions of a run, back as RDF:
+
+```sh
+rdf-to-eyecode data.ttl -o data.js
+eyecode rules.js > results.js         # rules.js loads facts_from('data.js')
+eyecode-to-rdf results.js -o results.ttl
+```
+
+`rdf-to-eyecode` takes the input options of `rdf-to-prolog` except `--rules`
+and `--include-source`, since rules belong in the eyecode program; and
+`eyecode-to-rdf` takes the options of `prolog-to-rdf`. The terms differ from
+the Prolog ones only in spelling: atoms are always quoted, as in
+`'default_graph'` and `lang('ar', 'rtl')`, and no statement ends with a period.
+
+A term `skolem(Rule, Variable, Arguments)` in an eyecode conclusion names
+something a rule said exists. `eyecode-to-rdf` writes it as a blank node of
+scope `skolem` labelled by the term's canonical text, so the same rule firing
+always gives the same node and different firings never share one.
+
 ## JavaScript API
 
 ```js
@@ -143,11 +169,16 @@ import {
   compileRdfToProlog,
   extractRdfFromProlog,
   serializeRdfFromProlog,
+  compileRdfDocumentToEyecode,
+  serializeRdfFromEyecode,
 } from 'rdf-prolog-interchange';
 
 const facts = compileRdfToProlog(nquads);
 const nquadsAgain = extractRdfFromProlog(facts);
 const turtle = serializeRdfFromProlog(facts, { format: 'ttl' });
+
+const document = await compileRdfDocumentToEyecode(turtle, { inputPath: 'data.ttl' });
+const trig = serializeRdfFromEyecode(eyecodeConclusions, { format: 'trig' });
 ```
 
 ## Term mapping

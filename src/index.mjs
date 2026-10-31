@@ -5,13 +5,22 @@ export {
   compileRdfToEyeProlog,
   compileRdfDocumentToEyeProlog,
   compileQuadsToEyeProlog,
+  compileRdfDocumentToEyecode,
 } from './rdf-to-prolog.mjs';
 export {
   extractRdfFromProlog,
   extractRdfQuadsFromProlog,
   serializeRdfFromProlog,
   extractEyePrologRdf,
+  serializeRdfFromEyecode,
 } from './prolog-to-rdf.mjs';
+export {
+  compileQuadsToEyecode,
+  extractRdfQuadsFromEyecode,
+  quadToEyecode,
+  readEyecodeDocument,
+  toEyecode,
+} from './eyecode.mjs';
 export {
   parseNQuads,
   fromRdfJs,

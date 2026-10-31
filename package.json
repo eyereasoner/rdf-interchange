@@ -8,6 +8,8 @@
   "bin": {
     "rdf-to-prolog": "./bin/rdf-to-prolog.js",
     "prolog-to-rdf": "./bin/prolog-to-rdf.js",
+    "rdf-to-eyecode": "./bin/rdf-to-eyecode.js",
+    "eyecode-to-rdf": "./bin/eyecode-to-rdf.js",
     "rdf-to-pl": "./bin/rdf-to-prolog.js",
     "pl-to-rdf": "./bin/prolog-to-rdf.js"
   },
