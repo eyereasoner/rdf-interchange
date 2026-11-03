@@ -1,15 +1,15 @@
 {
   "name": "rdf-interchange",
-  "version": "0.1.2",
-  "description": "Standalone RDF 1.2 interchange toolkit for ISO Prolog and eyecode.",
+  "version": "0.1.3",
+  "description": "Standalone RDF 1.2 interchange toolkit for ISO Prolog and eyemind.",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": "./src/index.mjs",
   "bin": {
     "rdf-to-prolog": "./bin/rdf-to-prolog.js",
     "prolog-to-rdf": "./bin/prolog-to-rdf.js",
-    "rdf-to-eyecode": "./bin/rdf-to-eyecode.js",
-    "eyecode-to-rdf": "./bin/eyecode-to-rdf.js",
+    "rdf-to-eyemind": "./bin/rdf-to-eyemind.js",
+    "eyemind-to-rdf": "./bin/eyemind-to-rdf.js",
     "rdf-to-pl": "./bin/rdf-to-prolog.js",
     "pl-to-rdf": "./bin/prolog-to-rdf.js"
   },

@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   compileRdfToProlog,
   compileRdfDocumentToProlog,
   extractRdfFromProlog,
   parseNQuads,
   serializeRdfFromProlog,
-  compileQuadsToEyecode,
-  compileRdfDocumentToEyecode,
-  readEyecodeDocument,
-  serializeRdfFromEyecode,
+  compileQuadsToEyemind,
+  compileRdfDocumentToEyemind,
+  readEyemindDocument,
+  serializeRdfFromEyemind,
 } from '../src/index.mjs';
 import { parseClauses, parseGoalText, parseNumberTokenText } from '../src/prolog-parser.mjs';
 
@@ -203,17 +206,45 @@ await test('N-Quads document input does not require rdf-parse', async () => {
   assert.equal(extractRdfFromProlog(prolog), source);
 });
 
-await test('RDF 1.2 roundtrips through an eyecode document', async () => {
+await test('eyemind commands are packaged and identify themselves in help and errors', () => {
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  for (const name of ['rdf-to-eyemind', 'eyemind-to-rdf']) {
+    assert.equal(pkg.bin[name], `./bin/${name}.js`);
+    const executable = fileURLToPath(new URL(`../bin/${name}.js`, import.meta.url));
+    const help = spawnSync(process.execPath, [executable, '--help'], { encoding: 'utf8', timeout: 10000 });
+    assert.equal(help.status, 0, help.stderr);
+    assert.ok(help.stdout.startsWith(`Usage: ${name} `), help.stdout);
+    const error = spawnSync(process.execPath, [executable, '--unknown'], { encoding: 'utf8', timeout: 10000 });
+    assert.equal(error.status, 1);
+    assert.equal(error.stderr, `${name}: unknown option: --unknown\n`);
+  }
+});
+
+await test('RDF roundtrips through the eyemind commands on standard input', () => {
+  const source = '<https://example/s> <https://example/p> "chat"@fr <https://example/g> .\n';
+  const converted = spawnSync(process.execPath,
+    [fileURLToPath(new URL('../bin/rdf-to-eyemind.js', import.meta.url)), '--format', 'nq'],
+    { input: source, encoding: 'utf8', timeout: 10000 });
+  assert.equal(converted.status, 0, converted.stderr);
+  assert.match(converted.stdout, /^rdf\(iri\('https:\/\/example\/s'\), /m);
+  const restored = spawnSync(process.execPath,
+    [fileURLToPath(new URL('../bin/eyemind-to-rdf.js', import.meta.url))],
+    { input: converted.stdout, encoding: 'utf8', timeout: 10000 });
+  assert.equal(restored.status, 0, restored.stderr);
+  assert.equal(restored.stdout, source);
+});
+
+await test('RDF 1.2 roundtrips through an eyemind document', async () => {
   const source = '<https://example/s> <https://example/says> <<( _:a <https://example/text> "مرحبا"@ar--rtl )>> <https://example/g> .\n' +
     '<https://example/s> <https://example/note> "it\'s \\"quoted\\"\\nand\\ttabbed"^^<https://example/t> .\n';
-  const document = await compileRdfDocumentToEyecode(source, { inputPath: 'example.nq', scope: 'doc' });
+  const document = await compileRdfDocumentToEyemind(source, { inputPath: 'example.nq', scope: 'doc' });
   assert.match(document, /^rdf\(iri\('https:\/\/example\/s'\), iri\('https:\/\/example\/says'\), triple\(bnode\('doc', 'a'\), /m);
   assert.match(document, /lang\('ar', 'rtl'\)/);
   assert.match(document, /literal\('it\\'s "quoted"\\nand\\ttabbed', datatype\('https:\/\/example\/t'\)\)/);
-  assert.equal(serializeRdfFromEyecode(document), source.replace('_:a', '_:e646f63_61'));
+  assert.equal(serializeRdfFromEyemind(document), source.replace('_:a', '_:e646f63_61'));
 });
 
-await test('eyecode conclusions convert, with the default graph and result_rdf/4', () => {
+await test('eyemind conclusions convert, with the default graph and result_rdf/4', () => {
   const conclusions = [
     "result_rdf(iri('https://example/s'), iri('https://example/p'), literal('42', datatype('http://www.w3.org/2001/XMLSchema#integer')), 'default_graph')",
     "rdf(iri('https://example/s'), iri('https://example/p'), literal('Welcome', lang('en', 'ltr')), iri('https://example/g'))",
@@ -221,19 +252,19 @@ await test('eyecode conclusions convert, with the default graph and result_rdf/4
     "result_rdf(iri('https://example/s'), iri('https://example/p'), literal('42', datatype('http://www.w3.org/2001/XMLSchema#integer')), 'default_graph')",
   ].join('\n');
   assert.equal(
-    serializeRdfFromEyecode(conclusions),
+    serializeRdfFromEyemind(conclusions),
     '<https://example/s> <https://example/p> "42"^^<http://www.w3.org/2001/XMLSchema#integer> .\n' +
       '<https://example/s> <https://example/p> "Welcome"@en--ltr <https://example/g> .\n',
   );
 });
 
-await test('eyecode Skolem terms become blank nodes, one per rule firing', () => {
+await test('eyemind Skolem terms become blank nodes, one per rule firing', () => {
   const conclusions = [
     "result_rdf(iri('https://example/ann'), iri('https://example/parent'), skolem(2, 'P', [iri('https://example/ann')]), 'default_graph')",
     "result_rdf(skolem(2, 'P', [iri('https://example/ann')]), iri('https://example/a'), iri('https://example/Person'), 'default_graph')",
     "result_rdf(iri('https://example/bob'), iri('https://example/parent'), skolem(2, 'P', [iri('https://example/bob')]), 'default_graph')",
   ].join('\n');
-  const lines = serializeRdfFromEyecode(conclusions).trim().split('\n');
+  const lines = serializeRdfFromEyemind(conclusions).trim().split('\n');
   const annParent = lines[0].split(' ')[2];
   assert.match(annParent, /^_:e/);
   assert.equal(lines[1].split(' ')[0], annParent);
@@ -242,8 +273,8 @@ await test('eyecode Skolem terms become blank nodes, one per rule firing', () =>
   assert.equal(label, "skolem(2, 'P', [iri('https://example/ann')])");
 });
 
-await test('the eyecode reader accepts document forms and never executes text', () => {
-  const [term] = readEyecodeDocument("// note\nf('a', \"b\\u{1F600}\", -2, 1.5, [x(), ...T], {k: 1}, struct('n m', 3))");
+await test('the eyemind reader accepts document forms and never executes text', () => {
+  const [term] = readEyemindDocument("// note\nf('a', \"b\\u{1F600}\", -2, 1.5, [x(), ...T], {k: 1}, struct('n m', 3))");
   assert.equal(term.name, 'f');
   assert.equal(term.args[1].name, 'b😀');
   assert.equal(term.args[2].name, '-2');
@@ -251,14 +282,14 @@ await test('the eyecode reader accepts document forms and never executes text', 
   assert.equal(term.args[4].args[1].type, 'var');
   assert.equal(term.args[6].name, 'n m');
   for (const text of ['f(a.b)', 'f(`x`)', 'f(1 + 2)', 'f(x)(y)', 'new f()', 'f(a = 1)', 'f(null)', 'f(0x10)', 'f(1) g(2)']) {
-    assert.throws(() => readEyecodeDocument(text), /eyecode document/, text);
+    assert.throws(() => readEyemindDocument(text), /eyemind document/, text);
   }
 });
 
-await test('RDF positions in eyecode documents reject numbers and variables', () => {
-  assert.throws(() => serializeRdfFromEyecode("rdf(iri('https://example/s'), iri('https://example/p'), literal(42, datatype('https://example/t')), 'default_graph')"), /must be an atom/);
-  assert.throws(() => serializeRdfFromEyecode("rdf(iri('https://example/s'), iri('https://example/p'), X, 'default_graph')"), /not an RDF value/);
-  assert.equal(compileQuadsToEyecode([]), '// Generated by rdf-interchange.\n// RDF terms use rdf(Subject, Predicate, Object, Graph).\n');
+await test('RDF positions in eyemind documents reject numbers and variables', () => {
+  assert.throws(() => serializeRdfFromEyemind("rdf(iri('https://example/s'), iri('https://example/p'), literal(42, datatype('https://example/t')), 'default_graph')"), /must be an atom/);
+  assert.throws(() => serializeRdfFromEyemind("rdf(iri('https://example/s'), iri('https://example/p'), X, 'default_graph')"), /not an RDF value/);
+  assert.equal(compileQuadsToEyemind([]), '// Generated by rdf-interchange.\n// RDF terms use rdf(Subject, Predicate, Object, Graph).\n');
 });
 
 // Confirm rdf-parse integration when the dependency is present. The extraction's

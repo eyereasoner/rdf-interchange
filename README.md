@@ -2,7 +2,7 @@
 
 Standalone RDF 1.2 interchange toolkit. It reversibly converts RDF dataset
 quads to ordinary `rdf/4` Prolog facts and ground `rdf/4` facts back to RDF,
-and does the same for [eyecode](#eyecode) documents.
+and does the same for [eyemind](#eyemind) documents.
 The package contains no Prolog solver.
 
 RDF supplies the data model; ISO Prolog supplies the programming language.
@@ -135,29 +135,29 @@ exactly what that means.
 
 Aliases `rdf-to-pl` and `pl-to-rdf` are also provided.
 
-## eyecode
+## eyemind
 
-[eyecode](https://github.com/eyereasoner/eyecode) states rules in JavaScript
+[eyemind](https://github.com/eyereasoner/eyemind) states rules in JavaScript
 and reads data as documents of JavaScript expressions, one per line, which it
-never executes. `rdf-to-eyecode` writes the same `rdf/4` terms as such a
-document, for eyecode's `facts_from`, and `eyecode-to-rdf` reads the ground
-`rdf/4` and `result_rdf/4` terms of an eyecode document, such as the
+never executes. `rdf-to-eyemind` writes the same `rdf/4` terms as such a
+document, for eyemind's `facts_from`, and `eyemind-to-rdf` reads the ground
+`rdf/4` and `result_rdf/4` terms of an eyemind document, such as the
 conclusions of a run, back as RDF:
 
 ```sh
-rdf-to-eyecode data.ttl -o data.js
-eyecode rules.js > results.js         # rules.js loads facts_from('data.js')
-eyecode-to-rdf results.js -o results.ttl
+rdf-to-eyemind data.ttl -o data.js
+eyemind rules.js > results.js         # rules.js loads facts_from('data.js')
+eyemind-to-rdf results.js -o results.ttl
 ```
 
-`rdf-to-eyecode` takes the input options of `rdf-to-prolog` except `--rules`
-and `--include-source`, since rules belong in the eyecode program; and
-`eyecode-to-rdf` takes the options of `prolog-to-rdf`. The terms differ from
+`rdf-to-eyemind` takes the input options of `rdf-to-prolog` except `--rules`
+and `--include-source`, since rules belong in the eyemind program; and
+`eyemind-to-rdf` takes the options of `prolog-to-rdf`. The terms differ from
 the Prolog ones only in spelling: atoms are always quoted, as in
 `'default_graph'` and `lang('ar', 'rtl')`, and no statement ends with a period.
 
-A term `skolem(Rule, Variable, Arguments)` in an eyecode conclusion names
-something a rule said exists. `eyecode-to-rdf` writes it as a blank node of
+A term `skolem(Rule, Variable, Arguments)` in an eyemind conclusion names
+something a rule said exists. `eyemind-to-rdf` writes it as a blank node of
 scope `skolem` labelled by the term's canonical text, so the same rule firing
 always gives the same node and different firings never share one.
 
@@ -169,16 +169,16 @@ import {
   compileRdfToProlog,
   extractRdfFromProlog,
   serializeRdfFromProlog,
-  compileRdfDocumentToEyecode,
-  serializeRdfFromEyecode,
+  compileRdfDocumentToEyemind,
+  serializeRdfFromEyemind,
 } from 'rdf-interchange';
 
 const facts = compileRdfToProlog(nquads);
 const nquadsAgain = extractRdfFromProlog(facts);
 const turtle = serializeRdfFromProlog(facts, { format: 'ttl' });
 
-const document = await compileRdfDocumentToEyecode(turtle, { inputPath: 'data.ttl' });
-const trig = serializeRdfFromEyecode(eyecodeConclusions, { format: 'trig' });
+const document = await compileRdfDocumentToEyemind(turtle, { inputPath: 'data.ttl' });
+const trig = serializeRdfFromEyemind(eyemindConclusions, { format: 'trig' });
 ```
 
 ## Term mapping

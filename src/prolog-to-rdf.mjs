@@ -3,7 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { parseClauses } from './prolog-parser.mjs';
 import { fromEyeProlog, quadToNQuad, quadsToTrig, quadsToTurtle } from './rdf-codec.mjs';
-import { extractRdfQuadsFromEyecode } from './eyecode.mjs';
+import { extractRdfQuadsFromEyemind } from './eyemind.mjs';
 
 // Ground rdf/4 facts carry results. A result document that lists the answers
 // of a result_rdf/4 query, as eyepl writes, carries them as result_rdf/4 facts.
@@ -35,10 +35,10 @@ export function serializeRdfFromProlog(source, { format = 'nq' } = {}) {
   return serializeQuads(extractRdfQuadsFromProlog(source), format);
 }
 
-// The rdf/4 and result_rdf/4 terms of an eyecode document, such as the
-// conclusions of an eyecode run, as RDF; Skolem terms become blank nodes.
-export function serializeRdfFromEyecode(source, { format = 'nq' } = {}) {
-  return serializeQuads(extractRdfQuadsFromEyecode(source), format);
+// The rdf/4 and result_rdf/4 terms of an eyemind document, such as the
+// conclusions of an eyemind run, as RDF; Skolem terms become blank nodes.
+export function serializeRdfFromEyemind(source, { format = 'nq' } = {}) {
+  return serializeQuads(extractRdfQuadsFromEyemind(source), format);
 }
 
 function serializeQuads(quads, format) {
@@ -52,8 +52,8 @@ function serializeQuads(quads, format) {
 // Compatibility alias for the original EyeProlog adapter API.
 export const extractEyePrologRdf = extractRdfFromProlog;
 
-export function eyecodeToRdfCli(argv = process.argv.slice(2)) {
-  return prologToRdfCli(argv, { source: 'eyecode' });
+export function eyemindToRdfCli(argv = process.argv.slice(2)) {
+  return prologToRdfCli(argv, { source: 'eyemind' });
 }
 
 export async function prologToRdfCli(argv = process.argv.slice(2), { source: from = 'prolog' } = {}) {
@@ -69,7 +69,7 @@ export async function prologToRdfCli(argv = process.argv.slice(2), { source: fro
   }
   const source = input === '-' ? await stdin() : await fs.readFile(input, 'utf8');
   const selectedFormat = format ?? inferFormat(output);
-  const serialize = from === 'eyecode' ? serializeRdfFromEyecode : serializeRdfFromProlog;
+  const serialize = from === 'eyemind' ? serializeRdfFromEyemind : serializeRdfFromProlog;
   const result = serialize(source, { format: selectedFormat });
   if (output === '-') process.stdout.write(result); else await fs.writeFile(output, result);
 }
@@ -91,7 +91,7 @@ function normalizeFormat(format) {
 }
 
 function usage(from) {
-  const usageLine = from === 'eyecode' ? 'eyecode-to-rdf [options] [input.js|-]' : 'prolog-to-rdf [options] [input.pl|-]';
+  const usageLine = from === 'eyemind' ? 'eyemind-to-rdf [options] [input.js|-]' : 'prolog-to-rdf [options] [input.pl|-]';
   process.stdout.write(`Usage: ${usageLine}\n\n  --format nq|ttl|trig  RDF output syntax (otherwise inferred from -o)\n  -o, --output FILE     Write RDF to FILE\n`);
 }
 function required(a, i, o) { if (a[i] == null) throw new Error(`${o} requires a value`); return a[i]; }

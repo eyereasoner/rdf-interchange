@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseNQuads, quadToEyeProlog } from './rdf-codec.mjs';
 import { parseRdf } from './rdf-input.mjs';
-import { compileQuadsToEyecode } from './eyecode.mjs';
+import { compileQuadsToEyemind } from './eyemind.mjs';
 
 export function compileRdfToProlog(rdf, { scope = 'input', rules = '', includeSource = false } = {}) {
   return compileQuadsToProlog(parseNQuads(rdf, { scope }), { rules, includeSource });
@@ -36,20 +36,20 @@ export const compileRdfToEyeProlog = compileRdfToProlog;
 export const compileRdfDocumentToEyeProlog = compileRdfDocumentToProlog;
 export const compileQuadsToEyeProlog = compileQuadsToProlog;
 
-// RDF as an eyecode document of rdf/4 terms, for eyecode's facts_from.
-export async function compileRdfDocumentToEyecode(rdf, { scope = 'input', inputPath, contentType, baseIRI } = {}) {
-  return compileQuadsToEyecode(await parseRdf(rdf, { scope, path: inputPath, contentType, baseIRI }));
+// RDF as an eyemind document of rdf/4 terms, for eyemind's facts_from.
+export async function compileRdfDocumentToEyemind(rdf, { scope = 'input', inputPath, contentType, baseIRI } = {}) {
+  return compileQuadsToEyemind(await parseRdf(rdf, { scope, path: inputPath, contentType, baseIRI }));
 }
 
-export function rdfToEyecodeCli(argv = process.argv.slice(2)) {
-  return rdfToPrologCli(argv, { target: 'eyecode' });
+export function rdfToEyemindCli(argv = process.argv.slice(2)) {
+  return rdfToPrologCli(argv, { target: 'eyemind' });
 }
 
 export async function rdfToPrologCli(argv = process.argv.slice(2), { target = 'prolog' } = {}) {
   let input = '-'; let output = '-'; let rulesFile; let scope; let format; let baseIRI; let includeSource = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '-h' || a === '--help') return target === 'eyecode' ? eyecodeUsage() : usage();
+    if (a === '-h' || a === '--help') return target === 'eyemind' ? eyemindUsage() : usage();
     if (a === '--include-source' && target === 'prolog') includeSource = true;
     else if (a === '--rules' && target === 'prolog') rulesFile = required(argv, ++i, a);
     else if (a === '--scope') scope = required(argv, ++i, a);
@@ -67,8 +67,8 @@ export async function rdfToPrologCli(argv = process.argv.slice(2), { target = 'p
     contentType: format,
     baseIRI: baseIRI ?? (input === '-' ? undefined : pathToFileURL(path.resolve(input)).href),
   };
-  if (target === 'eyecode') {
-    const result = await compileRdfDocumentToEyecode(rdf, where);
+  if (target === 'eyemind') {
+    const result = await compileRdfDocumentToEyemind(rdf, where);
     if (output === '-') process.stdout.write(result); else await fs.writeFile(output, result);
     return;
   }
@@ -87,8 +87,8 @@ export async function rdfToPrologCli(argv = process.argv.slice(2), { target = 'p
 function usage() {
   process.stdout.write('Usage: rdf-to-prolog [options] [input|-]\n\n  --format TYPE      RDF media type or extension (required for stdin)\n  --base IRI         Base IRI for relative references\n  --rules FILE       Append Prolog rules using rdf/4\n  --include-source   Store input as source_rdf/4 and expose it through rdf/4\n  --scope NAME       Set blank-node scope\n  -o, --output FILE  Write Prolog to FILE\n');
 }
-function eyecodeUsage() {
-  process.stdout.write('Usage: rdf-to-eyecode [options] [input|-]\n\n  --format TYPE      RDF media type or extension (required for stdin)\n  --base IRI         Base IRI for relative references\n  --scope NAME       Set blank-node scope\n  -o, --output FILE  Write the eyecode document to FILE\n');
+function eyemindUsage() {
+  process.stdout.write('Usage: rdf-to-eyemind [options] [input|-]\n\n  --format TYPE      RDF media type or extension (required for stdin)\n  --base IRI         Base IRI for relative references\n  --scope NAME       Set blank-node scope\n  -o, --output FILE  Write the eyemind document to FILE\n');
 }
 function required(a, i, o) { if (a[i] == null) throw new Error(`${o} requires a value`); return a[i]; }
 function read(f) {
