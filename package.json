@@ -34,6 +34,17 @@
   },
   "license": "MIT",
   "author": "Jos De Roo / extracted adapter packaging",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eyereasoner/rdf-interchange.git"
+  },
+  "homepage": "https://github.com/eyereasoner/rdf-interchange#readme",
+  "bugs": {
+    "url": "https://github.com/eyereasoner/rdf-interchange/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "optionalDependencies": {
     "rdf-parse": "^5.0.0"
   }
