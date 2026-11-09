@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node.js ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      # rdf-parse, an optional dependency, reads Turtle, TriG and JSON-LD.
+      - run: npm install
+      # Unit tests, and every example's RDF, Prolog and eyemind files checked
+      # against each other.
+      - run: npm test

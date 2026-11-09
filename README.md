@@ -211,3 +211,20 @@ five-file layout, roundtrips every checked-in input/output Prolog dataset,
 and verifies that every `*-output.ttl|trig` is exactly the `prolog-to-rdf`
 serialization of its matching `*-output.pl`. When `rdf-parse` is installed it
 also regenerates each `*-input.pl` from the original Turtle/TriG source.
+
+## Releases
+
+`package.json` holds the version. A release runs the tests, bumps the
+version, commits, tags and pushes; the tag makes GitHub create the release
+and publish the package to npm through npm trusted publishing, with
+provenance and no stored token:
+
+```sh
+./release patch "Release v0.1.4: describe what changed"
+./release minor "Release v0.2.0: describe what changed"
+```
+
+The message is used as given for the commit, the tag and the release, and
+must say what changed. The publish workflow can also be run by hand for an
+existing tag, optionally as a dry run, and leaves a version npm already has
+as it is.
