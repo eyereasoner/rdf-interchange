@@ -27,6 +27,6 @@ jobs:
           node-version: ${{ matrix.node }}
       # rdf-parse, an optional dependency, reads Turtle, TriG and JSON-LD.
       - run: npm install
-      # Unit tests, and every example's RDF, Prolog and eyemind files checked
+      # Unit tests, and every example's RDF and Prolog files checked
       # against each other.
       - run: npm test
