@@ -1,5 +1,7 @@
 # rdf-interchange
 
+[![npm](https://img.shields.io/npm/v/rdf-interchange.svg)](https://www.npmjs.com/package/rdf-interchange)
+
 Standalone RDF 1.2 interchange toolkit. It reversibly converts RDF dataset
 quads to ordinary `rdf/4` Prolog facts and ground `rdf/4` facts back to RDF,
 and does the same for [eyemind](#eyemind) documents.
