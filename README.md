@@ -2,6 +2,14 @@
 
 [![npm](https://img.shields.io/npm/v/rdf-interchange.svg)](https://www.npmjs.com/package/rdf-interchange)
 
+> [!NOTE]
+> [eyemind](https://github.com/eyereasoner/eyemind) now reads and writes RDF
+> 1.2 itself, with no dependency: `eyemind rules.js data.ttl` gives a program
+> the data as `rdf(S, P, O, G)` facts, and `eyemind --to turtle` writes its
+> conclusions as RDF. `rdf-to-eyemind` and `eyemind-to-rdf` here are
+> superseded by it; the Prolog converters, `rdf-to-prolog` and
+> `prolog-to-rdf`, remain this package's.
+
 Standalone RDF 1.2 interchange toolkit. It reversibly converts RDF dataset
 quads to ordinary `rdf/4` Prolog facts and ground `rdf/4` facts back to RDF,
 and does the same for [eyemind](#eyemind) documents.
